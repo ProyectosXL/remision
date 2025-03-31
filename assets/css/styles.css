@@ -1,0 +1,238 @@
+
+/* Custom Styles */
+body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f6f7fb 0%, #e9ebf3 100%);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Animation Classes */
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.animate-slide-down {
+    animation: slideDown 0.4s ease-out;
+}
+
+.animate-scale-in {
+    animation: scaleIn 0.3s ease-in-out;
+}
+
+/* Custom shadows */
+.custom-shadow {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 
+                0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.custom-shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+                0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Responsive table */
+@media (max-width: 640px) {
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+    
+    th, td {
+        min-width: 120px;
+    }
+}
+
+/* Custom button hover effects */
+button {
+    transition: all 0.2s ease-in-out;
+}
+
+button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading-spinner {
+    animation: spin 1s linear infinite;
+}
+
+/* File input hover area */
+.file-input-hover {
+    transition: all 0.3s ease-in-out;
+}
+
+.file-input-hover:hover {
+    background-color: #f8fafc;
+    border-color: #4f46e5;
+    transform: scale(1.01);
+}
+
+/* Modal styles */
+.modal {
+    animation: scaleIn 0.3s ease-in-out;
+}
+
+.modal-backdrop {
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+/* Table styles */
+.table-container {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table-row {
+    transition: background-color 0.2s ease-in-out;
+}
+
+.table-row:hover {
+    background-color: #f8fafc;
+}
+
+/* Custom input styles */
+input[type="datetime-local"] {
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    padding: 8px 12px;
+    transition: all 0.2s ease-in-out;
+}
+
+input[type="datetime-local"]:focus {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+/* Success and error states */
+.success-message {
+    background-color: #10b981;
+    color: white;
+    padding: 1rem;
+    border-radius: 6px;
+    animation: slideDown 0.4s ease-out;
+}
+
+.error-message {
+    background-color: #ef4444;
+    color: white;
+    padding: 1rem;
+    border-radius: 6px;
+    animation: slideDown 0.4s ease-out;
+}
+
+/* Utility classes */
+.flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.transition-all {
+    transition: all 0.3s ease-in-out;
+}
+
+/* Responsive padding adjustments */
+@media (max-width: 768px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    .modal {
+        margin: 1rem;
+        width: calc(100% - 2rem);
+    }
+}
+
+/* Print styles */
+@media print {
+    .no-print {
+        display: none;
+    }
+    
+    body {
+        background: none;
+    }
+    
+    .container {
+        max-width: 100%;
+        padding: 0;
+    }
+}
+
+    .tooltip-container {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .tooltip {
+        visibility: hidden;
+        width: 120px;
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        padding: 5px;
+        position: absolute;
+        z-index: 1;
+        bottom: 125%;
+        left: 50%;
+        margin-left: -60px;
+        opacity: 0;
+        transition: opacity 0.3s;
+        font-size: 12px;
+    }
+    
+    .tooltip::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: #333 transparent transparent transparent;
+    }
+    
+    .tooltip-container:hover .tooltip {
+        visibility: visible;
+        opacity: 1;
+    }
