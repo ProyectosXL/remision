@@ -6,12 +6,17 @@ if (!defined('BASE_PATH')) {
 }
 
 require_once BASE_PATH . '/class/pedido.php';
+require_once BASE_PATH . '/class/classEnv.php';
 
 class ImportController {
     private $pedido;
+    private $apiUrl;
     
     public function __construct() {
         $this->pedido = new Pedido();
+        $vars = new DotEnv(__DIR__ . '/../../.env');
+        $this->envVars = $vars->listVars();
+        $this->apiUrl =  $this->envVars['API_URL'];
     }
     
     public function handleRequest() {
@@ -21,6 +26,9 @@ class ImportController {
         $jsonInput = file_get_contents('php://input');
         $data = json_decode($jsonInput, true);
         
+        if (!$data) {
+            $data = $_POST;
+        }
         if (!$data) {
             $this->sendResponse(false, 'Datos inválidos');
             return;
@@ -36,6 +44,9 @@ class ImportController {
                     break;
                 case 'programar':
                     $this->programarRemision($data['data'], $data['scheduledDateTime']);
+                    break;
+                case 'getTareas':
+                    $this->getTareas($data['data']);
                     break;
                 default:
                     $this->sendResponse(false, 'Acción no válida');
@@ -53,15 +64,16 @@ class ImportController {
             // Crear un array asociativo para búsqueda rápida
             $pedidosMap = array();
             foreach ($pedidosDB as $pedido) {
-                $key = $pedido['TALON_PED'] . '-' . $pedido['NRO_PEDIDO'];
+                $key = $pedido['TALON_PED'] . '-' . trim($pedido['NRO_PEDIDO']);
                 $pedidosMap[$key] = $pedido;
             }
             
             // Validar cada pedido del Excel
             $resultados = array();
             foreach ($data as $row) {
-                $key = $row['talonario'] . '-' . $row['numeroPedido'];
-                
+          
+                $key = $row['talonario'] . '-' . trim($row['numeroPedido']);
+
                 if (isset($pedidosMap[$key])) {
                     // El pedido existe
                     $pedidoInfo = $pedidosMap[$key];
@@ -125,9 +137,9 @@ class ImportController {
             // Validar la fecha programada
             $fechaProgramada = new DateTime($scheduledDateTime);
             $ahora = new DateTime();
-            
-            if ($fechaProgramada < $ahora) {
-                throw new Exception('La fecha programada debe ser posterior a la actual');
+     
+            if ($fechaProgramada > $ahora) {
+                throw new Exception('La fechaa programada debe ser posterior a la actual');
             }
             
             // Filtrar solo los pedidos válidos
@@ -165,10 +177,39 @@ class ImportController {
     }
     
     private function registrarPedidoProgramado($idProgramacion, $pedido, $fechaProgramada) {
-        // Aquí implementarías la lógica para registrar el pedido programado
-        // Por ejemplo, guardar en una tabla de programaciones
-        return true;
+        $url = $this->apiUrl . '/remisionMasiva/programarTarea';
+        
+        $data = [
+            "idProgramacion" => $idProgramacion,
+            "pedido" => $pedido,
+            "fechaProgramada" => $fechaProgramada
+        ];
+    
+        $jsonData = json_encode($data);
+    
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json'
+        ]);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
+    
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    
+        curl_close($ch);
+    
+        if ($httpCode == 200) {
+            return json_decode($response, true);
+        } else {
+            return [
+                "success" => false,
+                "message" => "Error al programar el pedido en la API de Node.js"
+            ];
+        }
     }
+    
     
     private function sendResponse($success, $message, $data = null) {
         echo json_encode([
@@ -177,6 +218,35 @@ class ImportController {
             'data' => $data
         ]);
         exit;
+    }
+
+    private function getTareas($data){
+        
+        $url = $this->apiUrl . '/remisionMasiva/tareas';
+
+        $jsonData = json_encode($data);
+        
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json'
+        ]);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
+    
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    
+        curl_close($ch);
+    
+        if ($httpCode == 200) {
+            echo json_encode($response);
+        } else {
+            return [
+                "success" => false,
+                "message" => "Error al programar el pedido en la API de Node.js"
+            ];
+        }
     }
 }
 

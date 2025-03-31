@@ -170,6 +170,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+
     function displayData(data) {
         dataTableBody.innerHTML = '';
         data.forEach(row => {
@@ -183,72 +184,76 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td class="px-6 py-4 whitespace-nowrap text-sm ${row.exists ? 'text-green-500' : 'text-red-500'}">
                     ${row.exists ? 'Válido' : 'No encontrado'}
                 </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm"style="padding-left: 0px;">
+                    ${row.exists ? '' : '<button class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded" onclick="borrarLinea(this)"><i class="fas fa-trash"></i></button><button class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded ml-2" onclick="editar(this)"><i class="fas fa-edit"></i></button> '}
+                </td>
+
             `;
             dataTableBody.appendChild(tr);
         });
     }
 
     // Remitir Ahora handler
-document.getElementById('remitirBtn').addEventListener('click', async function() {
-    if (!importedData.length) {
-        mostrarAlerta('No hay datos para procesar', 'error');
-        return;
-    }
-
-    const validData = importedData.filter(row => row.exists);
-    if (validData.length === 0) {
-        mostrarAlerta('No hay pedidos válidos para procesar', 'error');
-        return;
-    }
-
-    if (!confirm(`¿Desea procesar ${validData.length} pedidos ahora?`)) {
-        return;
-    }
-
-    loadingSpinner.classList.remove('hidden');
-    
-    try {
-        const response = await fetch('assets/controllers/importController.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                action: 'remitir',
-                data: validData
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error(`Error HTTP: ${response.status}`);
+    document.getElementById('remitirBtn').addEventListener('click', async function() {
+        if (!importedData.length) {
+            mostrarAlerta('No hay datos para procesar', 'error');
+            return;
         }
 
-        const result = await response.json();
+        const validData = importedData.filter(row => row.exists);
+        if (validData.length === 0) {
+            mostrarAlerta('No hay pedidos válidos para procesar', 'error');
+            return;
+        }
+
+        if (!confirm(`¿Desea procesar ${validData.length} pedidos ahora?`)) {
+            return;
+        }
+
+        loadingSpinner.classList.remove('hidden');
         
-        if (result.success) {
-            // Mensaje mejorado con más información
-            const mensaje = `
-                <div class="text-center">
-                    <i class="fas fa-check-circle text-green-500 text-4xl mb-4"></i>
-                    <h3 class="text-xl font-bold mb-2">¡Proceso completado exitosamente!</h3>
-                    <p class="mb-2">Número de tarea: <span class="font-semibold">${result.taskId || 'TASK_' + Date.now()}</span></p>
-                    <p class="mb-2">Pedidos procesados: <span class="font-semibold">${validData.length}</span></p>
-                    <p class="text-sm text-gray-500">Fecha: ${new Date().toLocaleString()}</p>
-                </div>
-            `;
+        try {
+            const response = await fetch('assets/controllers/importController.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'remitir',
+                    data: validData
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error HTTP: ${response.status}`);
+            }
+
+            const result = await response.json();
             
-            mostrarAlerta(mensaje, 'success');
-            resetForm();
-        } else {
-            throw new Error(result.message || 'Error en el proceso de remisión');
+            if (result.success) {
+                // Mensaje mejorado con más información
+                const mensaje = `
+                    <div class="text-center">
+                        <i class="fas fa-check-circle text-green-500 text-4xl mb-4"></i>
+                        <h3 class="text-xl font-bold mb-2">¡Proceso completado exitosamente!</h3>
+                        <p class="mb-2">Número de tarea: <span class="font-semibold">${result.taskId || 'TASK_' + Date.now()}</span></p>
+                        <p class="mb-2">Pedidos procesados: <span class="font-semibold">${validData.length}</span></p>
+                        <p class="text-sm text-gray-500">Fecha: ${new Date().toLocaleString()}</p>
+                    </div>
+                `;
+                
+                mostrarAlerta(mensaje, 'success');
+                resetForm();
+            } else {
+                throw new Error(result.message || 'Error en el proceso de remisión');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarAlerta('Error al procesar la remisión: ' + error.message, 'error');
+        } finally {
+            loadingSpinner.classList.add('hidden');
         }
-    } catch (error) {
-        console.error('Error:', error);
-        mostrarAlerta('Error al procesar la remisión: ' + error.message, 'error');
-    } finally {
-        loadingSpinner.classList.add('hidden');
-    }
-});
+    });
 
     // Programar handler
     const modalProgramar = document.getElementById('modalProgramar');
@@ -418,3 +423,155 @@ function mostrarAlerta(mensaje, tipo) {
     });
 }
 });
+
+function borrarLinea (btn) {
+    btn.parentElement.parentElement.remove();
+};
+
+
+const editar = (btn) => {
+    const tr = btn.parentElement.parentElement;
+    const talonario = tr.children[0].textContent;
+    const numeroPedido = tr.children[1].textContent;
+
+    // modal con los datos para editar 
+    const modalEditar = document.getElementById('modalEditar');
+    const talonarioInput = document.getElementById('talonarioInput');
+    const numeroPedidoInput = document.getElementById('numeroPedidoInput');
+
+    talonarioInput.value = talonario;
+    talonarioInput.setAttribute('valorAnterior', talonario);
+
+    numeroPedidoInput.value = numeroPedido;
+    numeroPedidoInput.setAttribute('valorAnterior', numeroPedido);
+
+    modalEditar.classList.remove('hidden');
+
+}
+
+const validarNumeroDePedido = async () => {
+
+    const talonarioInput = document.getElementById('talonarioInput');
+    const numeroPedidoInput = document.getElementById('numeroPedidoInput');
+
+    
+
+    const talonario = talonarioInput.value;
+
+    if (!talonario) {
+        alert('Por favor, ingrese el talonario');
+        return;
+    }
+
+    const numeroPedido = numeroPedidoInput.value;
+
+    if (!numeroPedido) {
+        alert('Por favor, ingrese el número de pedido');
+        return;
+    }
+
+    const numeroPedidoAnterior = numeroPedidoInput.getAttribute('valorAnterior');
+    const talonarioAnterior = talonarioInput.getAttribute('valorAnterior');
+
+
+    if (numeroPedido === numeroPedidoAnterior && talonario === talonarioAnterior) {
+        alert('No se realizaron cambios');
+        return;
+    }
+    const allTr = document.querySelectorAll('tbody tr');
+    const existe = false;
+    allTr.forEach(tr => {
+
+        const talonarioTd = tr.children[0].textContent;
+        const numeroPedidoTd = tr.children[1].textContent;
+
+        if (talonario === talonarioTd && numeroPedido === numeroPedidoTd) {
+            alert('El número de pedido ya existe');
+            existe = true;
+        }
+
+    })
+
+    if (existe) {
+
+        return
+    }
+
+    let data = [];
+
+    data.push({
+        talonario: talonario,
+        numeroPedido: numeroPedido
+    });
+
+    try {
+        const response = await fetch('assets/controllers/importController.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                action: 'validar',
+                data: data
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status}`);
+        }
+
+        const result = await response.json();
+        
+        if (result.success) {
+            allTr.forEach(tr => {
+                const talonarioTd = tr.children[0].textContent;
+                const numeroPedidoTd = tr.children[1].textContent;
+        
+                if (talonarioAnterior === talonarioTd && numeroPedidoAnterior === numeroPedidoTd) {
+                    
+                    tr.children[0].textContent = talonario;
+                    tr.children[1].textContent = numeroPedido;
+
+                    if(result.data[0].exists){
+
+                        tr.children[2].textContent = result.data[0].COD_CLIENT;
+                        tr.children[3].textContent = result.data[0].DESC_SUCURSAL;
+                        tr.children[4].textContent = result.data[0].CANT_PEDID;
+
+                        tr.children[5].textContent = 'Válido';
+                        tr.children[5].classList.remove('text-red-500');
+                        tr.children[5].classList.add('text-green-500');
+                        console.log(tr);
+                        const button = tr.children[6];
+                        button.remove();
+                        
+
+                    }else{
+                        tr.children[5].textContent = 'No encontrado';
+                        tr.children[5].classList.remove('text-green-500');
+                        tr.children[5].classList.add('text-red-500');
+                    }
+        
+        
+                }
+            });
+        }
+
+        console.log(result);
+
+    } catch (error) {
+    }
+
+
+    
+
+    const modalEditar = document.getElementById('modalEditar');
+    modalEditar.classList.add('hidden');
+    
+
+}
+
+const cerrarModalEditar = () => {
+    const modalEditar = document.getElementById('modalEditar');
+    modalEditar.classList.add('hidden');
+}
