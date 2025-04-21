@@ -1,4 +1,4 @@
-
+let importedData = [];
 document.addEventListener('DOMContentLoaded', function() {
     // Elements
     const tabExcel = document.getElementById('tabExcel');
@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const loadingSpinner = document.getElementById('loadingSpinner');
     const buscarRango = document.getElementById('buscarRango');
     
-    let importedData = [];
+
 
     // Tab handling
     tabExcel.addEventListener('click', function() {
@@ -201,10 +201,23 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         const validData = importedData.filter(row => row.exists);
+        let allValid = true;
+        importedData.forEach(row => {
+            if (!row.exists) {
+                allValid = false;
+            }
+        });
+
+        if(!allValid) {
+            mostrarAlerta('Para poder procesar se deben corregir o eliminar los pedidos inválidos.', 'error');
+            return;
+        }
+        
         if (validData.length === 0) {
             mostrarAlerta('No hay pedidos válidos para procesar', 'error');
             return;
         }
+
 
         if (!confirm(`¿Desea procesar ${validData.length} pedidos ahora?`)) {
             return;
@@ -274,6 +287,20 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('No hay datos para programar');
             return;
         }
+
+
+        let allValid = true;
+        importedData.forEach(row => {
+            if (!row.exists) {
+                allValid = false;
+            }
+        });
+
+        if(!allValid) {
+            mostrarAlerta('Para poder procesar se deben corregir o eliminar los pedidos inválidos.', 'error');
+            return;
+        }
+
 
         const validData = importedData.filter(row => row.exists);
         if (validData.length === 0) {
@@ -378,50 +405,50 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función para mostrar alertas personalizadas
-function mostrarAlerta(mensaje, tipo) {
-    // Crear elemento de alerta
-    const alertaDiv = document.createElement('div');
-    alertaDiv.className = `fixed inset-0 flex items-center justify-center z-50`;
-    
-    // Aplicar estilos según el tipo
-    let colorClass = '';
-    let iconClass = '';
-    
-    switch(tipo) {
-        case 'success':
-            colorClass = 'bg-green-50 border-green-500 text-green-700';
-            iconClass = 'text-green-500 fa-check-circle';
-            break;
-        case 'error':
-            colorClass = 'bg-red-50 border-red-500 text-red-700';
-            iconClass = 'text-red-500 fa-exclamation-circle';
-            break;
-        default:
-            colorClass = 'bg-blue-50 border-blue-500 text-blue-700';
-            iconClass = 'text-blue-500 fa-info-circle';
-    }
-    
-    // Contenido de la alerta
-    alertaDiv.innerHTML = `
-        <div class="bg-black bg-opacity-50 absolute inset-0"></div>
-        <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 z-10 relative">
-            ${mensaje}
-            <div class="mt-6 flex justify-center">
-                <button class="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 transition-colors">
-                    Aceptar
-                </button>
+    function mostrarAlerta(mensaje, tipo) {
+        // Crear elemento de alerta
+        const alertaDiv = document.createElement('div');
+        alertaDiv.className = `fixed inset-0 flex items-center justify-center z-50`;
+        
+        // Aplicar estilos según el tipo
+        let colorClass = '';
+        let iconClass = '';
+        
+        switch(tipo) {
+            case 'success':
+                colorClass = 'bg-green-50 border-green-500 text-green-700';
+                iconClass = 'text-green-500 fa-check-circle';
+                break;
+            case 'error':
+                colorClass = 'bg-red-50 border-red-500 text-red-700';
+                iconClass = 'text-red-500 fa-exclamation-circle';
+                break;
+            default:
+                colorClass = 'bg-blue-50 border-blue-500 text-blue-700';
+                iconClass = 'text-blue-500 fa-info-circle';
+        }
+        
+        // Contenido de la alerta
+        alertaDiv.innerHTML = `
+            <div class="bg-black bg-opacity-50 absolute inset-0"></div>
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 z-10 relative">
+                ${mensaje}
+                <div class="mt-6 flex justify-center">
+                    <button class="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 transition-colors">
+                        Aceptar
+                    </button>
+                </div>
             </div>
-        </div>
-    `;
-    
-    // Agregar al body
-    document.body.appendChild(alertaDiv);
-    
-    // Cerrar al hacer click en el botón
-    alertaDiv.querySelector('button').addEventListener('click', function() {
-        alertaDiv.remove();
-    });
-}
+        `;
+        
+        // Agregar al body
+        document.body.appendChild(alertaDiv);
+        
+        // Cerrar al hacer click en el botón
+        alertaDiv.querySelector('button').addEventListener('click', function() {
+            alertaDiv.remove();
+        });
+    }
 });
 
 function borrarLinea (btn) {
@@ -544,6 +571,18 @@ const validarNumeroDePedido = async () => {
                         console.log(tr);
                         const button = tr.children[6];
                         button.remove();
+
+                
+                        importedData.forEach(row => {
+                            if (row.TALON_PED === talonarioAnterior && row.NRO_PEDIDO === numeroPedidoAnterior) {
+                                console.log("entro");
+                                row.TALON_PED = talonario;
+                                row.NRO_PEDIDO = numeroPedido;
+                                row.exists = true;
+                            }
+                        });
+                      
+
                         
 
                     }else{
@@ -568,6 +607,7 @@ const validarNumeroDePedido = async () => {
     const modalEditar = document.getElementById('modalEditar');
     modalEditar.classList.add('hidden');
     
+
 
 }
 
