@@ -452,7 +452,23 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function borrarLinea (btn) {
-    btn.parentElement.parentElement.remove();
+    const tr = btn.parentElement.parentElement;
+    const talonario = tr.children[0].textContent;
+    const numeroPedido = tr.children[1].textContent;
+
+    const indexToRemove = importedData.findIndex(row => 
+        row.talonario === talonario || 
+        row.TALON_PED === talonario &&
+        (row.numeroPedido === numeroPedido || row.NRO_PEDIDO === numeroPedido)
+    );
+
+    if (indexToRemove > -1) {
+        importedData.splice(indexToRemove, 1);
+    }
+
+    tr.remove();
+
+    console.log(importedData);  
 };
 
 
