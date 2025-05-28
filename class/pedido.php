@@ -14,7 +14,7 @@ class Pedido
 
     public function traerPedidos () {
         
-        $sql = "SELECT A.TALON_PED, A.NRO_PEDIDO, A.COD_CLIENT, C.DESC_SUCURSAL, CAST(CANT_PEDID AS FLOAT) CANT_PEDID, A.N_REMITO  FROM GVA21 A
+        $sql = "SELECT A.TALON_PED, A.NRO_PEDIDO, A.COD_CLIENT, C.DESC_SUCURSAL, CAST(CANT_PEDID AS FLOAT) CANT_PEDID, A.N_REMITO, NRO_SUCURSAL  FROM GVA21 A
                 INNER JOIN (SELECT TALON_PED, NRO_PEDIDO, SUM(CANT_PEDID) CANT_PEDID FROM GVA03 GROUP BY TALON_PED, NRO_PEDIDO) B 
                         ON A.TALON_PED = B.TALON_PED AND A.NRO_PEDIDO = B.NRO_PEDIDO
                 INNER JOIN LAKERBIS.LOCALES_LAKERS.DBO.SUCURSALES_LAKERS C ON A.COD_CLIENT = C.COD_CLIENT COLLATE Latin1_General_BIN
@@ -38,4 +38,79 @@ class Pedido
 
     }
 
+    public function ejecutarRemisionMasiva($data){
+
+        $nroPedido = strlen($data['NRO_PEDIDO']) == 13 ? ' ' . $data['NRO_PEDIDO'] : $data['NRO_PEDIDO'];
+        
+        $codDeposito = $data['NRO_SUCURSAL'];
+        $codCliente = $data['COD_CLIENT'];
+    
+        $sql = '';
+        $sql = "EXEC FU_REMISION_MASIVA '$nroPedido', '$codDeposito', '$codCliente'";
+
+        try{
+            $stmt = sqlsrv_query( $this->cid_central, $sql );
+            if($stmt === false) {
+                throw new Exception("Error al ejecutar la consulta: " . sqlsrv_errors());
+            }
+            return true;
+        } catch (Exception $e) {
+            return false;
+        }
+        
+
+    }
+
+    public function insertarHistoricoPedidosEnc($cantidadPedidos, $tipo, $estado){
+        $sql = "
+            INSERT INTO FU_REMISION_HISTORICO_ENC
+                (FECHA_TAREA, CANTIDAD_PEDIDOS, TIPO_TAREA, COMIENZO, ESTADO)
+            OUTPUT INSERTED.ID AS NuevoID
+            VALUES
+                (GETDATE(), ?, ?, GETDATE(), ?);
+        ";
+    
+        $params = [
+            $cantidadPedidos,
+            $tipo,
+            $estado
+        ];
+    
+        try {
+            $stmt = sqlsrv_query($this->cid_central, $sql, $params);
+            if ($stmt === false) {
+                $errors = sqlsrv_errors();
+                throw new Exception("Error al ejecutar la consulta: " . print_r($errors, true));
+            }
+    
+            $row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
+            if ($row === null) {
+                throw new Exception("No se devolvió ningún ID tras el INSERT.");
+            }
+    
+            return $row['NuevoID'];
+        }
+        catch (Exception $e) {
+            return false;
+        }
+    }
+    
+    public function insertarHistoricoPedidosDet($idHistorico, $nroPedido, $codCliente, $nroSucurs, $estado){
+
+        $sql = "INSERT INTO FU_REMISION_HISTORICO_DET (ID_TAREA, NRO_PEDIDO, COD_CLIENT, NRO_SUCURS, FINALIZACION) 
+                VALUES ($idHistorico, '$nroPedido', '$codCliente', $nroSucurs, getdate())";
+
+        try{
+            $stmt = sqlsrv_query( $this->cid_central, $sql );
+
+            if($stmt === false) {
+                throw new Exception("Error al ejecutar la consulta: " . sqlsrv_errors());
+            }
+
+            return true;
+        } catch (Exception $e) {
+            return false;
+        }
+
+    }
 }

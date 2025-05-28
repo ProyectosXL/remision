@@ -80,37 +80,41 @@ document.addEventListener('DOMContentLoaded', function() {
             row.className = 'hover:bg-gray-50';
             
             let tipoClase = 'bg-blue-100 text-blue-800';
-            if (tarea.tipo_tarea.toLowerCase() == 'programación') {
+            
+            // programacion 
+            if (tarea.tipo_tarea == '1') {
                 tipoClase = 'bg-purple-100 text-purple-800';
             }
             
             let estadoIcono = 'fa-check-circle text-green-500';
             let estadoTexto = 'Finalizada';
-            if (tarea.estado.toLowerCase() === 'pendiente') {
+
+            // pendiente
+            if (tarea.estado === '2') {
                 estadoIcono = 'fa-clock text-yellow-500';
                 estadoTexto = 'Pendiente';
             }
             
             row.innerHTML = `
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    ${tarea.nro_tarea}
+                    ${tarea.ID}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    ${formatFechaHora(tarea.fecha_tarea)}
+                    ${formatFechaHora(tarea.FECHA_TAREA)}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    ${tarea.cantidad_pedidos}
+                    ${tarea.CANTIDAD_PEDIDOS}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <span class="px-2 py-1 text-xs font-semibold rounded-full ${tipoClase}">
-                        ${tarea.tipo_tarea}
+                        ${tarea.TIPO_TAREA}
                     </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    ${formatFechaHora(tarea.comienzo)}
+                    ${formatFechaHora(tarea.COMIENZO)}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    ${tarea.finalizacion ? formatFechaHora(tarea.finalizacion) : '-'}
+                    ${tarea.FINALIZACION ? formatFechaHora(tarea.FINALIZACION) : '-'}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">
                     <span class="inline-flex items-center">
@@ -120,11 +124,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <div class="flex justify-center gap-4">
-                        <a href="detalle.php?id=${tarea.nro_tarea}" class="text-blue-600 hover:text-blue-800 tooltip-container">
+                        <a href="detalle.php?id=${tarea.ID}" class="text-blue-600 hover:text-blue-800 tooltip-container">
                             <i class="fas fa-eye text-lg"></i>
                             <span class="tooltip">Ver detalle</span>
                         </a>
-                        <button onclick="imprimirRemitos('${tarea.nro_tarea}', ${tarea.cantidad_pedidos}, '${tarea.comienzo || ''}', '${tarea.finalizacion || ''}')" 
+                        <button onclick="imprimirRemitos('${tarea.ID}', ${tarea.CANTIDAD_PEDIDOS}, '${tarea.COMIENZO || ''}', '${tarea.FINALIZACION || ''}')" 
                                 class="text-gray-600 hover:text-blue-600 tooltip-container">
                             <i class="fas fa-print text-lg"></i>
                             <span class="tooltip">Imprimir remitos</span>

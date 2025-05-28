@@ -594,6 +594,10 @@ const validarNumeroDePedido = async () => {
                                 console.log("entro");
                                 row.TALON_PED = talonario;
                                 row.NRO_PEDIDO = numeroPedido;
+                                row.COD_CLIENT = result.data[0].COD_CLIENT;
+                                row.DESC_SUCURSAL = result.data[0].DESC_SUCURSAL;
+                                row.CANT_PEDID = result.data[0].CANT_PEDID;
+                                row.NRO_SUCURSAL = result.data[0].NRO_SUCURSAL;
                                 row.exists = true;
                             }
                         });

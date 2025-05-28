@@ -1,4 +1,6 @@
-
+<?php
+    $idTareaEnc = $_GET['id'];
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -12,6 +14,7 @@
 <body class="bg-gray-100">
     <div class="container mx-auto px-4 py-8" id="contenido-principal">
         <!-- Header -->
+         <div id="idTareaEnc" style="display: none;"><?php echo $idTareaEnc ?></div>
         <header class="mb-10">
             <div class="flex justify-between items-center mb-6">
                 <h1 class="text-3xl font-bold text-gray-800 flex items-center">
@@ -80,48 +83,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Número Factura</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        <!-- Ejemplo de filas -->
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"> 000010028172</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">FRCONC</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">CONCORDIA</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">19</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">-</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">-</td>
-                        </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"> 000010028085</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">FRCONC</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">CONCORDIA</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">21</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">R0080000138477</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">A0014400067444</td>
-                        </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"> 0000100282377</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">FRCONC</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">CONCORDIA</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">52</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">R0080000138835</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">A0014400067708</td>
-                        </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"> 0000100283495</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">FRCONC</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">CONCORDIA</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">50</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">R0080000139190</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">A0014400067914</td>
-                        </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"> 0000100284003</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">FRCONC</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">CONCORDIA</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">12</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">-</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">-</td>
-                        </tr>
+                    <tbody class="bg-white divide-y divide-gray-200" id="tabla-detalles">
                     </tbody>
                 </table>
             </div>
@@ -129,6 +91,10 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="assets/js/detalle.js"></script>
+    <!-- jquery -->
+
     <script>
         function imprimirTodos() {
             // Guardar el título original de la página

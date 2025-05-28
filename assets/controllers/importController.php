@@ -33,7 +33,7 @@ class ImportController {
             $this->sendResponse(false, 'Datos inválidos');
             return;
         }
-        
+
         try {
             switch ($data['action']) {
                 case 'validar':
@@ -47,6 +47,9 @@ class ImportController {
                     break;
                 case 'getTareas':
                     $this->getTareas($data['data']);
+                    break;
+                case 'getDetalleTarea':
+                    $this->obtenerDetalleTarea($data['idTarea']);
                     break;
                 default:
                     $this->sendResponse(false, 'Acción no válida');
@@ -83,7 +86,8 @@ class ImportController {
                         'COD_CLIENT' => $pedidoInfo['COD_CLIENT'],
                         'DESC_SUCURSAL' => $pedidoInfo['DESC_SUCURSAL'],
                         'CANT_PEDID' => $pedidoInfo['CANT_PEDID'],
-                        'exists' => true
+                        'exists' => true,
+                        'NRO_SUCURSAL' => $pedidoInfo['NRO_SUCURSAL']
                     );
                 } else {
                     // El pedido no existe
@@ -93,7 +97,8 @@ class ImportController {
                         'COD_CLIENT' => 'N/A',
                         'DESC_SUCURSAL' => 'No encontrado',
                         'CANT_PEDID' => 0,
-                        'exists' => false
+                        'exists' => false,
+                        'NRO_SUCURSAL' => 0
                     );
                 }
             }
@@ -106,6 +111,7 @@ class ImportController {
     }
     
     private function procesarRemision($data) {
+
         try {
             // Filtrar solo los pedidos válidos
             $pedidosValidos = array_filter($data, function($pedido) {
@@ -116,13 +122,27 @@ class ImportController {
                 throw new Exception('No hay pedidos válidos para procesar');
             }
             
-            // Aquí podrías agregar la lógica para procesar los pedidos en el CRM
-            // Por ahora solo registramos los pedidos
+            $cantidadPedidos = count($pedidosValidos);
+            $tipo = 1;
+            $estado = 1;
             
-            foreach ($pedidosValidos as $pedido) {
-                $this->registrarPedidoProcesado($pedido);
+            $idTareaEnc = $this->registrarPedido($cantidadPedidos, $tipo, $estado);
+
+            if($idTareaEnc == 0) {
+                throw new Exception('Error al registrar el pedido');
             }
-            
+
+            foreach ($pedidosValidos as $pedido) {
+                $resultRemision = $this->pedido->ejecutarRemisionMasiva($pedido);
+
+                if(!$resultRemision) {
+                    throw new Exception('Error al procesar el pedido: ' . $pedido['NRO_PEDIDO']);
+                }
+
+                $this->insertarHistoricoPedidosDet($idTareaEnc, $pedido);
+
+            }
+
             $this->sendResponse(true, 'Pedidos procesados correctamente', [
                 'total_procesados' => count($pedidosValidos)
             ]);
@@ -134,7 +154,6 @@ class ImportController {
     
     private function programarRemision($data, $scheduledDateTime) {
         try {
-            // Validar la fecha programada
             $fechaProgramada = new DateTime($scheduledDateTime);
             $ahora = new DateTime();
      
@@ -142,7 +161,6 @@ class ImportController {
                 throw new Exception('La fechaa programada debe ser posterior a la actual');
             }
             
-            // Filtrar solo los pedidos válidos
             $pedidosValidos = array_filter($data, function($pedido) {
                 return $pedido['exists'] === true;
             });
@@ -150,9 +168,6 @@ class ImportController {
             if (empty($pedidosValidos)) {
                 throw new Exception('No hay pedidos válidos para programar');
             }
-            
-            // Aquí podrías agregar la lógica para programar los pedidos
-            // Por ahora solo registramos la programación
             
             $idProgramacion = uniqid('PROG_');
             foreach ($pedidosValidos as $pedido) {
@@ -174,6 +189,20 @@ class ImportController {
         // Aquí implementarías la lógica para registrar el pedido procesado
         // Por ejemplo, guardar en una tabla de la base de datos
         return true;
+    }
+
+    private function insertarHistoricoPedidosEnc($cantidadPedidos, $tipo, $estado) {
+        $result = $this->pedido->insertarHistoricoPedidosEnc($cantidadPedidos, $tipo, $estado);
+        return $result  ;
+    }
+
+    private function insertarHistoricoPedidosDet($idTareaEnc, $pedido) {
+        $nroPedido = $pedido['NRO_PEDIDO'];
+        $codDeposito = '2'; 
+        $codCliente = $pedido['COD_CLIENT'];
+        $estado = 1; 
+        $result = $this->pedido->insertarHistoricoPedidosDet($idTareaEnc, $nroPedido, $codCliente, $codDeposito, $estado);
+        return $result  ;
     }
     
     private function registrarPedidoProgramado($idProgramacion, $pedido, $fechaProgramada) {
@@ -247,6 +276,81 @@ class ImportController {
                 "message" => "Error al programar el pedido en la API de Node.js"
             ];
         }
+    }
+
+    private function registrarPedido($cantidadPedidos, $tipo, $estado) {
+        $url = $this->apiUrl . '/remisionMasiva/registrar';
+
+        $jsonData = json_encode([
+            "cantidadPedidos" => $cantidadPedidos,
+            "tipo" => $tipo,
+            "estado" => $estado
+        ]);
+        
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json'
+        ]);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
+    
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    
+        curl_close($ch);
+    
+        if ($httpCode == 200) {
+            $response = json_decode($response, true);
+            if (isset($response['body']) && is_array($response['body'])) {
+                return $response['body'][0]['ID'];
+            } else {
+                return 0;
+            }
+        } else {
+            return [
+                "success" => false,
+                "message" => "Error al programar el pedido en la API de Node.js"
+            ];
+        }
+    
+        return true;
+    }
+
+    private function obtenerDetalleTarea($idTarea) {
+
+        $url = $this->apiUrl . '/remisionMasiva/detalleTarea';
+
+        $jsonData = json_encode([
+            "idEncabezado" => $idTarea
+        ]);
+        
+        
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json'
+        ]);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+        curl_close($ch);
+
+        $res = json_decode($response, true)['body'];
+    
+        if ($httpCode == 200) {
+            echo json_encode($res);
+        } else {
+            return [
+                "success" => false,
+                "message" => "Error al obtener el detalle de la tarea en la API de Node.js"
+            ];
+        }
+
+
     }
 }
 
