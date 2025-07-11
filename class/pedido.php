@@ -15,7 +15,7 @@ class Pedido
     public function traerPedidos () {
         
         $sql = "SELECT A.TALON_PED, A.NRO_PEDIDO, A.COD_CLIENT, C.DESC_SUCURSAL, CAST(CANT_PEDID AS FLOAT) CANT_PEDID, A.N_REMITO, NRO_SUCURSAL  FROM GVA21 A
-                INNER JOIN (SELECT TALON_PED, NRO_PEDIDO, SUM(CANT_PEDID) CANT_PEDID FROM GVA03 GROUP BY TALON_PED, NRO_PEDIDO) B 
+                INNER JOIN (SELECT TALON_PED, NRO_PEDIDO, SUM(CANT_PEDID) CANT_PEDID FROM GVA03 WHERE PROMOCION != '1'  GROUP BY TALON_PED, NRO_PEDIDO) B 
                         ON A.TALON_PED = B.TALON_PED AND A.NRO_PEDIDO = B.NRO_PEDIDO
                 INNER JOIN LAKERBIS.LOCALES_LAKERS.DBO.SUCURSALES_LAKERS C ON A.COD_CLIENT = C.COD_CLIENT COLLATE Latin1_General_BIN
                 WHERE FECHA_PEDI >= GETDATE()-60 AND A.COD_CLIENT LIKE '[GFM]%' AND A.TALON_PED = '1'";
@@ -59,40 +59,6 @@ class Pedido
         }
         
 
-    }
-
-    public function insertarHistoricoPedidosEnc($cantidadPedidos, $tipo, $estado){
-        $sql = "
-            INSERT INTO FU_REMISION_HISTORICO_ENC
-                (FECHA_TAREA, CANTIDAD_PEDIDOS, TIPO_TAREA, COMIENZO, ESTADO)
-            OUTPUT INSERTED.ID AS NuevoID
-            VALUES
-                (GETDATE(), ?, ?, GETDATE(), ?);
-        ";
-    
-        $params = [
-            $cantidadPedidos,
-            $tipo,
-            $estado
-        ];
-    
-        try {
-            $stmt = sqlsrv_query($this->cid_central, $sql, $params);
-            if ($stmt === false) {
-                $errors = sqlsrv_errors();
-                throw new Exception("Error al ejecutar la consulta: " . print_r($errors, true));
-            }
-    
-            $row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
-            if ($row === null) {
-                throw new Exception("No se devolvió ningún ID tras el INSERT.");
-            }
-    
-            return $row['NuevoID'];
-        }
-        catch (Exception $e) {
-            return false;
-        }
     }
     
     public function insertarHistoricoPedidosDet($idHistorico, $nroPedido, $codCliente, $nroSucurs, $estado){

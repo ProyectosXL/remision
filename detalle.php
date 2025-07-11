@@ -11,6 +11,21 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/styles.css">
 </head>
+
+<script>
+function descargarConsumo() {
+    const header = ['Número de Pedido', 'Código Cliente', 'Sucursal', 'Cantidad', 'Número Remito', 'Número Factura'];
+    const rows = Array.from(document.querySelectorAll('#tabla-detalles tr'))
+        .map(tr => Array.from(tr.cells).map(td => td.innerText.trim()));
+    const data = [header, ...rows];
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Consumo");
+    const id = document.getElementById('idTareaEnc').textContent.trim();
+    XLSX.writeFile(wb, `Consumo_TASK_${id}.xlsx`);
+}
+</script>
+
 <body class="bg-gray-100">
     <div class="container mx-auto px-4 py-8" id="contenido-principal">
         <!-- Header -->
@@ -33,11 +48,11 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-500">Nro. Tarea</label>
-                    <p class="mt-1 text-lg font-semibold">TASK_001</p>
+                    <p class="mt-1 text-lg font-semibold">TASK_<?php echo str_pad($idTareaEnc, 3, '0', STR_PAD_LEFT) ?></p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-500">Fecha Tarea</label>
-                    <p class="mt-1 text-lg">22/02/2024 10:30</p>
+                    <p class="mt-1 text-lg" id="fechaTarea"></p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-500">Tipo</label>
@@ -148,25 +163,6 @@
             document.head.removeChild(style);
         }
 
-        function descargarConsumo() {
-            // Datos de ejemplo para el Excel
-            const data = [
-                ['Número de Pedido', 'Código Cliente', 'Sucursal', 'Cantidad', 'Número Remito', 'Número Factura'],
-                [' 000010028172', 'FRCONC', 'CONCORDIA', 19, '-', '-'],
-                [' 000010028085', 'FRCONC', 'CONCORDIA', 21, 'R0080000138477', 'A0014400067444'],
-                [' 0000100282377', 'FRCONC', 'CONCORDIA', 52, 'R0080000138835', 'A0014400067708'],
-                [' 0000100283495', 'FRCONC', 'CONCORDIA', 50, 'R0080000139190', 'A0014400067914'],
-                [' 0000100284003', 'FRCONC', 'CONCORDIA', 12, '-', '-']
-            ];
-            
-            // Crear un libro de trabajo
-            const ws = XLSX.utils.aoa_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Consumo");
-            
-            // Descargar el archivo Excel
-            XLSX.writeFile(wb, "Consumo_TASK_001.xlsx");
-        }
     </script>
 </body>
 </html>

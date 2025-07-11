@@ -17,6 +17,7 @@ class ImportController {
         $vars = new DotEnv(__DIR__ . '/../../.env');
         $this->envVars = $vars->listVars();
         $this->apiUrl =  $this->envVars['API_URL'];
+    
     }
     
     public function handleRequest() {
@@ -183,17 +184,6 @@ class ImportController {
         } catch (Exception $e) {
             $this->sendResponse(false, 'Error al programar remisión: ' . $e->getMessage());
         }
-    }
-    
-    private function registrarPedidoProcesado($pedido) {
-        // Aquí implementarías la lógica para registrar el pedido procesado
-        // Por ejemplo, guardar en una tabla de la base de datos
-        return true;
-    }
-
-    private function insertarHistoricoPedidosEnc($cantidadPedidos, $tipo, $estado) {
-        $result = $this->pedido->insertarHistoricoPedidosEnc($cantidadPedidos, $tipo, $estado);
-        return $result  ;
     }
 
     private function insertarHistoricoPedidosDet($idTareaEnc, $pedido) {

@@ -90,13 +90,13 @@ function armarTabla(data) {
 
     const td4 = document.createElement('td');
     td4.classList.add('px-6', 'py-4', 'whitespace-nowrap', 'text-sm', 'text-gray-500');
-    td4.textContent = element.CANTIDAD_PEDIDO;
+    td4.textContent = element.cantidad;
 
     tr.appendChild(td4);
 
     const td5 = document.createElement('td');
     td5.classList.add('px-6', 'py-4', 'whitespace-nowrap', 'text-sm', 'text-gray-500');
-    td5.textContent = element.NRO_REM;
+    td5.textContent = element.N_COMP;
 
     tr.appendChild(td5);
 
