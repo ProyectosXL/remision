@@ -22,7 +22,7 @@ function descargarConsumo() {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Consumo");
     const id = document.getElementById('idTareaEnc').textContent.trim();
-    XLSX.writeFile(wb, `Consumo_TASK_${id}.xlsx`);
+    XLSX.writeFile(wb, `Consumo_${id}.xlsx`);
 }
 </script>
 
@@ -48,7 +48,7 @@ function descargarConsumo() {
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-500">Nro. Tarea</label>
-                    <p class="mt-1 text-lg font-semibold">TASK_<?php echo str_pad($idTareaEnc, 3, '0', STR_PAD_LEFT) ?></p>
+                    <p class="mt-1 text-lg font-semibold"><?php echo str_pad($idTareaEnc, 3, '0', STR_PAD_LEFT) ?></p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-500">Fecha Tarea</label>
@@ -116,7 +116,7 @@ function descargarConsumo() {
             const originalTitle = document.title;
             
             // Cambiar el título para la impresión
-            document.title = "Detalle de Remisión de Pedidos - TASK_001";
+            document.title = "Detalle de Remisión de Pedidos - <?php echo $idTareaEnc ?>";
             
             // Crear un estilo para la impresión
             const style = document.createElement('style');

@@ -145,7 +145,8 @@ class ImportController {
             }
 
             $this->sendResponse(true, 'Pedidos procesados correctamente', [
-                'total_procesados' => count($pedidosValidos)
+                'total_procesados' => count($pedidosValidos),
+                'idTareaEnc' => $idTareaEnc
             ]);
             
         } catch (Exception $e) {

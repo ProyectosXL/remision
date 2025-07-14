@@ -249,8 +249,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="text-center">
                         <i class="fas fa-check-circle text-green-500 text-4xl mb-4"></i>
                         <h3 class="text-xl font-bold mb-2">¡Proceso completado exitosamente!</h3>
-                        <p class="mb-2">Número de tarea: <span class="font-semibold">${result.taskId || 'TASK_' + Date.now()}</span></p>
-                        <p class="mb-2">Pedidos procesados: <span class="font-semibold">${validData.length}</span></p>
+                        <p class="mb-2">Número de tarea: <span class="font-semibold">${result.data?.idTareaEnc || 'TASK_' + Date.now()}</span></p>
+                        <p class="mb-2">Pedidos procesados: <span class="font-semibold">${result.data?.total_procesados || validData.length}</span></p>
                         <p class="text-sm text-gray-500">Fecha: ${new Date().toLocaleString()}</p>
                     </div>
                 `;
