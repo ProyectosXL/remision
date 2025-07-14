@@ -175,11 +175,21 @@ class ImportController {
             foreach ($pedidosValidos as $pedido) {
                 $this->registrarPedidoProgramado($idProgramacion, $pedido, $scheduledDateTime);
             }
+
+            $idTareaEnc = $this->registrarPedido(count($pedidosValidos), 2, 2, $scheduledDateTime);
+
+            if($idTareaEnc == 0) {
+                throw new Exception('Error al registrar el pedido');
+            }
+
+            $this->insertarHistoricoPedidosDet($idTareaEnc, $pedidosValidos);
+
             
             $this->sendResponse(true, 'Remisión programada correctamente', [
                 'id_programacion' => $idProgramacion,
                 'fecha_programada' => $scheduledDateTime,
-                'total_pedidos' => count($pedidosValidos)
+                'total_pedidos' => count($pedidosValidos),
+                'idTareaEnc' => $idTareaEnc
             ]);
             
         } catch (Exception $e) {
@@ -269,13 +279,14 @@ class ImportController {
         }
     }
 
-    private function registrarPedido($cantidadPedidos, $tipo, $estado) {
+    private function registrarPedido($cantidadPedidos, $tipo, $estado, $fecha = null) {
         $url = $this->apiUrl . '/remisionMasiva/registrar';
 
         $jsonData = json_encode([
             "cantidadPedidos" => $cantidadPedidos,
             "tipo" => $tipo,
-            "estado" => $estado
+            "estado" => $estado,
+            "fecha" => $fecha
         ]);
         
         $ch = curl_init($url);

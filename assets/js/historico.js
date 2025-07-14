@@ -80,10 +80,12 @@ document.addEventListener('DOMContentLoaded', function() {
             row.className = 'hover:bg-gray-50';
             
             let tipoClase = 'bg-blue-100 text-blue-800';
+            let tipoTexto = 'Ejecución';
             
             // programacion 
-            if (tarea.tipo_tarea == '1') {
+            if (tarea.tipo_tarea == '2') {
                 tipoClase = 'bg-purple-100 text-purple-800';
+                tipoTexto = 'Programación';
             }
             
             let estadoIcono = 'fa-check-circle text-green-500';
@@ -107,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <span class="px-2 py-1 text-xs font-semibold rounded-full ${tipoClase}">
-                        ${tarea.TIPO_TAREA}
+                        ${tipoTexto}
                     </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
