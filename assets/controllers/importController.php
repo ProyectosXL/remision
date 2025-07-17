@@ -170,20 +170,21 @@ class ImportController {
             if (empty($pedidosValidos)) {
                 throw new Exception('No hay pedidos válidos para programar');
             }
-            
-            $idProgramacion = uniqid('PROG_');
-            foreach ($pedidosValidos as $pedido) {
-                $this->registrarPedidoProgramado($idProgramacion, $pedido, $scheduledDateTime);
-            }
 
             $idTareaEnc = $this->registrarPedido(count($pedidosValidos), 2, 2, $scheduledDateTime);
+            $idProgramacion = uniqid('PROG_');
+
+            foreach ($pedidosValidos as $pedido) {
+                
+                $this->registrarPedidoProgramado($idProgramacion, $pedido, $scheduledDateTime);
+                $this->insertarHistoricoPedidosDet($idTareaEnc, $pedido);
+
+            }
 
             if($idTareaEnc == 0) {
                 throw new Exception('Error al registrar el pedido');
             }
-
-            $this->insertarHistoricoPedidosDet($idTareaEnc, $pedidosValidos);
-
+           
             
             $this->sendResponse(true, 'Remisión programada correctamente', [
                 'id_programacion' => $idProgramacion,

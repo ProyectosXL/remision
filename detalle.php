@@ -1,5 +1,12 @@
 <?php
-    $idTareaEnc = $_GET['id'];
+    require_once 'class/pedido.php';
+
+    $pedido = new Pedido();
+
+    $idTareaEnc = $_GET['id']; 
+    
+    $data = $pedido->getEncTarea($idTareaEnc);
+    
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -52,21 +59,25 @@ function descargarConsumo() {
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-500">Fecha Tarea</label>
-                    <p class="mt-1 text-lg" id="fechaTarea"></p>
+                    <p class="mt-1 text-lg"><?php echo $data[0]['FECHA_TAREA']->format('Y-m-d h:m:s'); ?></p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-500">Tipo</label>
                     <p class="mt-1">
                         <span class="px-3 py-1 text-sm font-semibold rounded-full bg-blue-100 text-blue-800">
-                            Ejecución
+                            <?php echo $data[0]['TIPO_TAREA'] == 1 ? 'Ejecución' : 'Programación'; ?>
                         </span>
                     </p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-500">Estado</label>
                     <p class="mt-1 flex items-center">
-                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
-                        <span>Finalizada</span>
+                        <?php if ($data[0]['ESTADO'] === 1) { ?>
+                            <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        <?php } else { ?>
+                            <i class="fas fa-clock text-yellow-500 mr-2"></i>
+                        <?php } ?>
+                        <span><?php echo $data[0]['ESTADO'] == 1 ? 'Finalizada' : 'Programada'; ?></span>
                     </p>
                 </div>
             </div>

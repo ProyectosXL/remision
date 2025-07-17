@@ -76,6 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
         tableBody.innerHTML = '';
         
         tareas.forEach(tarea => {
+  
             const row = document.createElement('tr');
             row.className = 'hover:bg-gray-50';
             
@@ -83,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function() {
             let tipoTexto = 'Ejecución';
             
             // programacion 
-            if (tarea.tipo_tarea == '2') {
+            if (tarea.TIPO_TAREA == '2') {
                 tipoClase = 'bg-purple-100 text-purple-800';
                 tipoTexto = 'Programación';
             }
@@ -92,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function() {
             let estadoTexto = 'Finalizada';
 
             // pendiente
-            if (tarea.estado === '2') {
+            if (tarea.ESTADO == '2') {
                 estadoIcono = 'fa-clock text-yellow-500';
                 estadoTexto = 'Pendiente';
             }

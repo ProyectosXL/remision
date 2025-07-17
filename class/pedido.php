@@ -18,7 +18,7 @@ class Pedido
                 INNER JOIN (SELECT TALON_PED, NRO_PEDIDO, SUM(CANT_PEDID) CANT_PEDID FROM GVA03 WHERE PROMOCION != '1'  GROUP BY TALON_PED, NRO_PEDIDO) B 
                         ON A.TALON_PED = B.TALON_PED AND A.NRO_PEDIDO = B.NRO_PEDIDO
                 INNER JOIN LAKERBIS.LOCALES_LAKERS.DBO.SUCURSALES_LAKERS C ON A.COD_CLIENT = C.COD_CLIENT COLLATE Latin1_General_BIN
-                WHERE FECHA_PEDI >= GETDATE()-60 AND A.COD_CLIENT LIKE '[GFM]%' AND A.TALON_PED = '1'";
+                WHERE FECHA_PEDI >= GETDATE()-60 AND A.COD_CLIENT LIKE '[GFM]%' AND A.TALON_PED = '1' AND A.ESTADO = '2'";
 
         $stmt = sqlsrv_query( $this->cid_central, $sql );
 
@@ -79,4 +79,20 @@ class Pedido
         }
 
     }
+
+    public function getEncTarea($idTareaEnc){
+        $sql = "SELECT * FROM FU_REMISION_HISTORICO_ENC WHERE ID = $idTareaEnc";
+        $stmt = sqlsrv_query($this->cid_central, $sql);
+
+        $rows = [];
+        while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
+            $rows[] = [
+                'FECHA_TAREA' => $row['FECHA_TAREA'],
+                'TIPO_TAREA' => $row['TIPO_TAREA'],
+                'ESTADO' => $row['ESTADO']
+            ];
+        }
+        return $rows;
+    }
+
 }
