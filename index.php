@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<html lang="es"> 
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -112,6 +112,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sucursal</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">accion</th>
                             </tr>
                         </thead>
                         <tbody id="dataTableBody" class="divide-y divide-gray-200">
@@ -183,6 +184,50 @@
                         </button>
                         <button id="confirmarProgramacion" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             Confirmar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="modalEditar"  class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                <div class="mt-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900">Modificar Pedido</h3>
+                        <button id="cerrarModal" onclick="cerrarModalEditar()" class="text-gray-400 hover:text-gray-500">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                            TALONARIO
+                            </label>
+                            <input type="text" 
+                                id="talonarioInput" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                min="">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                NÚMERO DE PEDIDO
+                            </label>
+                            <input type="text" 
+                                id="numeroPedidoInput" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                    </div>
+
+                    <div class="flex justify-end gap-3 mt-6">
+                        <button id="cancelarEditarPedido" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400" onclick="cerrarModalEditar()">
+                            Cancelar
+                        </button>
+                        <button  class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500" onclick="validarNumeroDePedido()">
+                            Validar
                         </button>
                     </div>
                 </div>

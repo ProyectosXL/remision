@@ -1,4 +1,3 @@
-
 <?php
 
 class Conexion{
@@ -46,16 +45,11 @@ class Conexion{
 
     public function conectar($nameServer = null) {
         try {
-
             $serverDB = $this->servidor($nameServer);
 
             $pass = $this->pass;
-            // $pass = ($nameServer == 'locales') ? $this->pass_locales : $this->pass;
-
             if($nameServer == 'locales' || $nameServer == 'tangoBis' || $nameServer == "suc_uy"){
-
                 $pass = $this->pass_locales;
-                
             }
             
             $params = array( 
@@ -66,11 +60,34 @@ class Conexion{
             );
 
             $cid = sqlsrv_connect($serverDB[0], $params);
-
             return $cid;
             
         } catch (PDOException $e) {
-            echo $e->getMessage();
+            throw new Exception("Error de conexión: " . $e->getMessage());
+        }
+    }
+
+    public function beginTransaction($cid) {
+        try {
+            sqlsrv_begin_transaction($cid);
+        } catch (Exception $e) {
+            throw new Exception("Error al iniciar transacción: " . $e->getMessage());
+        }
+    }
+
+    public function commit($cid) {
+        try {
+            sqlsrv_commit($cid);
+        } catch (Exception $e) {
+            throw new Exception("Error al confirmar transacción: " . $e->getMessage());
+        }
+    }
+
+    public function rollback($cid) {
+        try {
+            sqlsrv_rollback($cid);
+        } catch (Exception $e) {
+            throw new Exception("Error al revertir transacción: " . $e->getMessage());
         }
     }
 

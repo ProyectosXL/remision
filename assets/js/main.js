@@ -1,4 +1,4 @@
-
+let importedData = [];
 document.addEventListener('DOMContentLoaded', function() {
     // Elements
     const tabExcel = document.getElementById('tabExcel');
@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const loadingSpinner = document.getElementById('loadingSpinner');
     const buscarRango = document.getElementById('buscarRango');
     
-    let importedData = [];
+
 
     // Tab handling
     tabExcel.addEventListener('click', function() {
@@ -170,6 +170,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+
     function displayData(data) {
         dataTableBody.innerHTML = '';
         data.forEach(row => {
@@ -183,72 +184,89 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td class="px-6 py-4 whitespace-nowrap text-sm ${row.exists ? 'text-green-500' : 'text-red-500'}">
                     ${row.exists ? 'Válido' : 'No encontrado'}
                 </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm"style="padding-left: 0px;">
+                    ${row.exists ? '' : '<button class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded" onclick="borrarLinea(this)"><i class="fas fa-trash"></i></button><button class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded ml-2" onclick="editar(this)"><i class="fas fa-edit"></i></button> '}
+                </td>
+
             `;
             dataTableBody.appendChild(tr);
         });
     }
 
     // Remitir Ahora handler
-document.getElementById('remitirBtn').addEventListener('click', async function() {
-    if (!importedData.length) {
-        mostrarAlerta('No hay datos para procesar', 'error');
-        return;
-    }
+    document.getElementById('remitirBtn').addEventListener('click', async function() {
+        if (!importedData.length) {
+            mostrarAlerta('No hay datos para procesar', 'error');
+            return;
+        }
 
-    const validData = importedData.filter(row => row.exists);
-    if (validData.length === 0) {
-        mostrarAlerta('No hay pedidos válidos para procesar', 'error');
-        return;
-    }
-
-    if (!confirm(`¿Desea procesar ${validData.length} pedidos ahora?`)) {
-        return;
-    }
-
-    loadingSpinner.classList.remove('hidden');
-    
-    try {
-        const response = await fetch('assets/controllers/importController.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                action: 'remitir',
-                data: validData
-            })
+        const validData = importedData.filter(row => row.exists);
+        let allValid = true;
+        importedData.forEach(row => {
+            if (!row.exists) {
+                allValid = false;
+            }
         });
 
-        if (!response.ok) {
-            throw new Error(`Error HTTP: ${response.status}`);
+        if(!allValid) {
+            mostrarAlerta('Para poder procesar se deben corregir o eliminar los pedidos inválidos.', 'error');
+            return;
+        }
+        
+        if (validData.length === 0) {
+            mostrarAlerta('No hay pedidos válidos para procesar', 'error');
+            return;
         }
 
-        const result = await response.json();
-        
-        if (result.success) {
-            // Mensaje mejorado con más información
-            const mensaje = `
-                <div class="text-center">
-                    <i class="fas fa-check-circle text-green-500 text-4xl mb-4"></i>
-                    <h3 class="text-xl font-bold mb-2">¡Proceso completado exitosamente!</h3>
-                    <p class="mb-2">Número de tarea: <span class="font-semibold">${result.taskId || 'TASK_' + Date.now()}</span></p>
-                    <p class="mb-2">Pedidos procesados: <span class="font-semibold">${validData.length}</span></p>
-                    <p class="text-sm text-gray-500">Fecha: ${new Date().toLocaleString()}</p>
-                </div>
-            `;
-            
-            mostrarAlerta(mensaje, 'success');
-            resetForm();
-        } else {
-            throw new Error(result.message || 'Error en el proceso de remisión');
+
+        if (!confirm(`¿Desea procesar ${validData.length} pedidos ahora?`)) {
+            return;
         }
-    } catch (error) {
-        console.error('Error:', error);
-        mostrarAlerta('Error al procesar la remisión: ' + error.message, 'error');
-    } finally {
-        loadingSpinner.classList.add('hidden');
-    }
-});
+
+        loadingSpinner.classList.remove('hidden');
+        
+        try {
+            const response = await fetch('assets/controllers/importController.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'remitir',
+                    data: validData
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error HTTP: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            if (result.success) {
+                // Mensaje mejorado con más información
+                const mensaje = `
+                    <div class="text-center">
+                        <i class="fas fa-check-circle text-green-500 text-4xl mb-4"></i>
+                        <h3 class="text-xl font-bold mb-2">¡Proceso completado exitosamente!</h3>
+                        <p class="mb-2">Número de tarea: <span class="font-semibold">${result.data?.idTareaEnc || 'TASK_' + Date.now()}</span></p>
+                        <p class="mb-2">Pedidos procesados: <span class="font-semibold">${result.data?.total_procesados || validData.length}</span></p>
+                        <p class="text-sm text-gray-500">Fecha: ${new Date().toLocaleString()}</p>
+                    </div>
+                `;
+                
+                mostrarAlerta(mensaje, 'success');
+                resetForm();
+            } else {
+                throw new Error(result.message || 'Error en el proceso de remisión');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarAlerta('Error al procesar la remisión: ' + error.message, 'error');
+        } finally {
+            loadingSpinner.classList.add('hidden');
+        }
+    });
 
     // Programar handler
     const modalProgramar = document.getElementById('modalProgramar');
@@ -269,6 +287,20 @@ document.getElementById('remitirBtn').addEventListener('click', async function()
             alert('No hay datos para programar');
             return;
         }
+
+
+        let allValid = true;
+        importedData.forEach(row => {
+            if (!row.exists) {
+                allValid = false;
+            }
+        });
+
+        if(!allValid) {
+            mostrarAlerta('Para poder procesar se deben corregir o eliminar los pedidos inválidos.', 'error');
+            return;
+        }
+
 
         const validData = importedData.filter(row => row.exists);
         if (validData.length === 0) {
@@ -373,48 +405,233 @@ document.getElementById('remitirBtn').addEventListener('click', async function()
     }
 
     // Función para mostrar alertas personalizadas
-function mostrarAlerta(mensaje, tipo) {
-    // Crear elemento de alerta
-    const alertaDiv = document.createElement('div');
-    alertaDiv.className = `fixed inset-0 flex items-center justify-center z-50`;
-    
-    // Aplicar estilos según el tipo
-    let colorClass = '';
-    let iconClass = '';
-    
-    switch(tipo) {
-        case 'success':
-            colorClass = 'bg-green-50 border-green-500 text-green-700';
-            iconClass = 'text-green-500 fa-check-circle';
-            break;
-        case 'error':
-            colorClass = 'bg-red-50 border-red-500 text-red-700';
-            iconClass = 'text-red-500 fa-exclamation-circle';
-            break;
-        default:
-            colorClass = 'bg-blue-50 border-blue-500 text-blue-700';
-            iconClass = 'text-blue-500 fa-info-circle';
-    }
-    
-    // Contenido de la alerta
-    alertaDiv.innerHTML = `
-        <div class="bg-black bg-opacity-50 absolute inset-0"></div>
-        <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 z-10 relative">
-            ${mensaje}
-            <div class="mt-6 flex justify-center">
-                <button class="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 transition-colors">
-                    Aceptar
-                </button>
+    function mostrarAlerta(mensaje, tipo) {
+        // Crear elemento de alerta
+        const alertaDiv = document.createElement('div');
+        alertaDiv.className = `fixed inset-0 flex items-center justify-center z-50`;
+        
+        // Aplicar estilos según el tipo
+        let colorClass = '';
+        let iconClass = '';
+        
+        switch(tipo) {
+            case 'success':
+                colorClass = 'bg-green-50 border-green-500 text-green-700';
+                iconClass = 'text-green-500 fa-check-circle';
+                break;
+            case 'error':
+                colorClass = 'bg-red-50 border-red-500 text-red-700';
+                iconClass = 'text-red-500 fa-exclamation-circle';
+                break;
+            default:
+                colorClass = 'bg-blue-50 border-blue-500 text-blue-700';
+                iconClass = 'text-blue-500 fa-info-circle';
+        }
+        
+        // Contenido de la alerta
+        alertaDiv.innerHTML = `
+            <div class="bg-black bg-opacity-50 absolute inset-0"></div>
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 z-10 relative">
+                ${mensaje}
+                <div class="mt-6 flex justify-center">
+                    <button class="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 transition-colors">
+                        Aceptar
+                    </button>
+                </div>
             </div>
-        </div>
-    `;
-    
-    // Agregar al body
-    document.body.appendChild(alertaDiv);
-    
-    // Cerrar al hacer click en el botón
-    alertaDiv.querySelector('button').addEventListener('click', function() {
-        alertaDiv.remove();
-    });
-}
+        `;
+        
+        // Agregar al body
+        document.body.appendChild(alertaDiv);
+        
+        // Cerrar al hacer click en el botón
+        alertaDiv.querySelector('button').addEventListener('click', function() {
+            alertaDiv.remove();
+        });
+    }
 });
+
+function borrarLinea (btn) {
+    const tr = btn.parentElement.parentElement;
+    const talonario = tr.children[0].textContent;
+    const numeroPedido = tr.children[1].textContent;
+
+    const indexToRemove = importedData.findIndex(row => 
+        row.talonario === talonario || 
+        row.TALON_PED === talonario &&
+        (row.numeroPedido === numeroPedido || row.NRO_PEDIDO === numeroPedido)
+    );
+
+    if (indexToRemove > -1) {
+        importedData.splice(indexToRemove, 1);
+    }
+
+    tr.remove();
+
+    console.log(importedData);  
+};
+
+
+const editar = (btn) => {
+    const tr = btn.parentElement.parentElement;
+    const talonario = tr.children[0].textContent;
+    const numeroPedido = tr.children[1].textContent;
+
+    // modal con los datos para editar 
+    const modalEditar = document.getElementById('modalEditar');
+    const talonarioInput = document.getElementById('talonarioInput');
+    const numeroPedidoInput = document.getElementById('numeroPedidoInput');
+
+    talonarioInput.value = talonario;
+    talonarioInput.setAttribute('valorAnterior', talonario);
+
+    numeroPedidoInput.value = numeroPedido;
+    numeroPedidoInput.setAttribute('valorAnterior', numeroPedido);
+
+    modalEditar.classList.remove('hidden');
+
+}
+
+const validarNumeroDePedido = async () => {
+
+    const talonarioInput = document.getElementById('talonarioInput');
+    const numeroPedidoInput = document.getElementById('numeroPedidoInput');
+
+    
+
+    const talonario = talonarioInput.value;
+
+    if (!talonario) {
+        alert('Por favor, ingrese el talonario');
+        return;
+    }
+
+    const numeroPedido = numeroPedidoInput.value;
+
+    if (!numeroPedido) {
+        alert('Por favor, ingrese el número de pedido');
+        return;
+    }
+
+    const numeroPedidoAnterior = numeroPedidoInput.getAttribute('valorAnterior');
+    const talonarioAnterior = talonarioInput.getAttribute('valorAnterior');
+
+
+    if (numeroPedido === numeroPedidoAnterior && talonario === talonarioAnterior) {
+        alert('No se realizaron cambios');
+        return;
+    }
+    const allTr = document.querySelectorAll('tbody tr');
+    const existe = false;
+    allTr.forEach(tr => {
+
+        const talonarioTd = tr.children[0].textContent;
+        const numeroPedidoTd = tr.children[1].textContent;
+
+        if (talonario === talonarioTd && numeroPedido === numeroPedidoTd) {
+            alert('El número de pedido ya existe');
+            existe = true;
+        }
+
+    })
+
+    if (existe) {
+
+        return
+    }
+
+    let data = [];
+
+    data.push({
+        talonario: talonario,
+        numeroPedido: numeroPedido
+    });
+
+    try {
+        const response = await fetch('assets/controllers/importController.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                action: 'validar',
+                data: data
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status}`);
+        }
+
+        const result = await response.json();
+        
+        if (result.success) {
+            allTr.forEach(tr => {
+                const talonarioTd = tr.children[0].textContent;
+                const numeroPedidoTd = tr.children[1].textContent;
+        
+                if (talonarioAnterior === talonarioTd && numeroPedidoAnterior === numeroPedidoTd) {
+                    
+                    tr.children[0].textContent = talonario;
+                    tr.children[1].textContent = numeroPedido;
+
+                    if(result.data[0].exists){
+
+                        tr.children[2].textContent = result.data[0].COD_CLIENT;
+                        tr.children[3].textContent = result.data[0].DESC_SUCURSAL;
+                        tr.children[4].textContent = result.data[0].CANT_PEDID;
+
+                        tr.children[5].textContent = 'Válido';
+                        tr.children[5].classList.remove('text-red-500');
+                        tr.children[5].classList.add('text-green-500');
+                        console.log(tr);
+                        const button = tr.children[6];
+                        button.remove();
+
+                
+                        importedData.forEach(row => {
+                            if (row.TALON_PED === talonarioAnterior && row.NRO_PEDIDO === numeroPedidoAnterior) {
+                                console.log("entro");
+                                row.TALON_PED = talonario;
+                                row.NRO_PEDIDO = numeroPedido;
+                                row.COD_CLIENT = result.data[0].COD_CLIENT;
+                                row.DESC_SUCURSAL = result.data[0].DESC_SUCURSAL;
+                                row.CANT_PEDID = result.data[0].CANT_PEDID;
+                                row.NRO_SUCURSAL = result.data[0].NRO_SUCURSAL;
+                                row.exists = true;
+                            }
+                        });
+                      
+
+                        
+
+                    }else{
+                        tr.children[5].textContent = 'No encontrado';
+                        tr.children[5].classList.remove('text-green-500');
+                        tr.children[5].classList.add('text-red-500');
+                    }
+        
+        
+                }
+            });
+        }
+
+        console.log(result);
+
+    } catch (error) {
+    }
+
+
+    
+
+    const modalEditar = document.getElementById('modalEditar');
+    modalEditar.classList.add('hidden');
+    
+
+
+}
+
+const cerrarModalEditar = () => {
+    const modalEditar = document.getElementById('modalEditar');
+    modalEditar.classList.add('hidden');
+}
