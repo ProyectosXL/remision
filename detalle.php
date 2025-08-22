@@ -6,7 +6,6 @@
     $idTareaEnc = $_GET['id']; 
     
     $data = $pedido->getEncTarea($idTareaEnc);
-    
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -59,7 +58,7 @@ function descargarConsumo() {
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-500">Fecha Tarea</label>
-                    <p class="mt-1 text-lg"><?php echo $data[0]['FECHA_TAREA']->format('Y-m-d h:m:s'); ?></p>
+                    <p class="mt-1 text-lg"><?php echo $data[0]['FECHA_TAREA']->format('d/m/Y H:i'); ?></p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-500">Tipo</label>
@@ -94,7 +93,9 @@ function descargarConsumo() {
                 </button>
             </div>
         </div>
-
+    <div id="loadingSpinner" class="hidden fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+            <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500"></div>
+        </div>
         <!-- Tabla de Detalles -->
         <div class="bg-white rounded-lg shadow-lg overflow-hidden">
             <div class="overflow-x-auto">
@@ -106,7 +107,6 @@ function descargarConsumo() {
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sucursal</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Número Remito</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Número Factura</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200" id="tabla-detalles">

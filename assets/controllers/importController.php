@@ -157,6 +157,7 @@ class ImportController {
     private function programarRemision($data, $scheduledDateTime) {
         try {
             $fechaProgramada = new DateTime($scheduledDateTime);
+
             $ahora = new DateTime();
      
             if ($fechaProgramada > $ahora) {
@@ -175,8 +176,11 @@ class ImportController {
             $idProgramacion = uniqid('PROG_');
 
             foreach ($pedidosValidos as $pedido) {
-                
-                $this->registrarPedidoProgramado($idProgramacion, $pedido, $scheduledDateTime);
+                $fechaProgramada->modify('+1 second');
+
+                $scheduledDateTim = $fechaProgramada->format('Y-m-d H:i:s');
+
+                $this->registrarPedidoProgramado($idProgramacion, $pedido, $scheduledDateTim, $idTareaEnc);
                 $this->insertarHistoricoPedidosDet($idTareaEnc, $pedido);
 
             }
@@ -207,13 +211,14 @@ class ImportController {
         return $result  ;
     }
     
-    private function registrarPedidoProgramado($idProgramacion, $pedido, $fechaProgramada) {
+    private function registrarPedidoProgramado($idProgramacion, $pedido, $fechaProgramada, $idTarea) {
         $url = $this->apiUrl . '/remisionMasiva/programarTarea';
         
         $data = [
             "idProgramacion" => $idProgramacion,
             "pedido" => $pedido,
-            "fechaProgramada" => $fechaProgramada
+            "fechaProgramada" => $fechaProgramada,
+            "idTarea" => $idTarea
         ];
     
         $jsonData = json_encode($data);
@@ -341,7 +346,7 @@ class ImportController {
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
         curl_close($ch);
-
+        
         $res = json_decode($response, true)['body'];
     
         if ($httpCode == 200) {

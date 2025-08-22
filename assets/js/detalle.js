@@ -1,3 +1,5 @@
+const loadingSpinner = document.getElementById('loadingSpinner');
+loadingSpinner.classList.remove('hidden');
 const obtenerDetalleTarea = async () => {
     let idTareaEnc = document.querySelector('#idTareaEnc').textContent
     $.ajax({
@@ -13,6 +15,7 @@ const obtenerDetalleTarea = async () => {
             console.log(data,'response');
 
             armarTabla(data);
+            loadingSpinner.classList.add('hidden');
         },
         error: function (error) {
             console.log(error,'error');
@@ -25,46 +28,6 @@ obtenerDetalleTarea();
 function armarTabla(data) {
     const tabla = document.querySelector('#tabla-detalles');
     data.forEach(element => {
-        // console.log(element,'element');
-        // este log COD_CLIENT
-        // : 
-        // "GTARCO"
-        // CREATED_AT
-        // : 
-        // "2025-05-28T11:09:54.863Z"
-        // FINALIZACION
-        // : 
-        // "2025-05-28T11:09:54.863Z"
-        // ID
-        // : 
-        // 1
-        // ID_TAREA
-        // : 
-        // 1
-        // NRO_PEDIDO
-        // : 
-        // "0000100295424"
-        // NRO_SUCURS
-        // : 
-        // "2"
-        // UPDATED_AT
-        // : 
-        // "2025-05-28T11:09:54.863Z"
-
-    //     tabla      <table class="min-w-full">
-    //     <thead class="bg-gray-50">
-    //         <tr>
-    //             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Número de Pedido</th>
-    //             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código Cliente</th>
-    //             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sucursal</th>
-    //             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
-    //             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Número Remito</th>
-    //             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Número Factura</th>
-    //         </tr>
-    //     </thead>
-    //     <tbody class="bg-white divide-y divide-gray-200" id="tabla-detalles">
-    //     </tbody>
-    // </table>
 
     const tr = document.createElement('tr');
 
@@ -90,7 +53,7 @@ function armarTabla(data) {
 
     const td4 = document.createElement('td');
     td4.classList.add('px-6', 'py-4', 'whitespace-nowrap', 'text-sm', 'text-gray-500');
-    td4.textContent = element.cantidad;
+    td4.textContent = element.CANTIDAD;
 
     tr.appendChild(td4);
 
@@ -113,4 +76,14 @@ function armarTabla(data) {
 
     });
 }
+
+
+function formatFechaHora(fechaString, flag = false) {
+    if (!fechaString) return '-';
+    const [fecha, hora] = fechaString.split('T');
+    const [anio, mes, dia] = fecha.split('-');
+    const [hh, mm] = hora.replace('Z', '').split(':');
+    return `${dia}/${mes}/${anio} ${hh}:${mm}`;
+}
+
 

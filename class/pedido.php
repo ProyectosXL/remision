@@ -15,7 +15,7 @@ class Pedido
     public function traerPedidos () {
         
         $sql = "SELECT A.TALON_PED, A.NRO_PEDIDO, A.COD_CLIENT, C.DESC_SUCURSAL, CAST(CANT_PEDID AS FLOAT) CANT_PEDID, A.N_REMITO, NRO_SUCURSAL  FROM GVA21 A
-                INNER JOIN (SELECT TALON_PED, NRO_PEDIDO, SUM(CANT_PEDID) CANT_PEDID FROM GVA03 WHERE PROMOCION != '1'  GROUP BY TALON_PED, NRO_PEDIDO) B 
+                INNER JOIN (SELECT TALON_PED, NRO_PEDIDO, SUM(CANT_PEDID) CANT_PEDID FROM GVA03 WHERE PROMOCION != '1' AND CANT_PEN_D > 0  GROUP BY TALON_PED, NRO_PEDIDO) B 
                         ON A.TALON_PED = B.TALON_PED AND A.NRO_PEDIDO = B.NRO_PEDIDO
                 INNER JOIN LAKERBIS.LOCALES_LAKERS.DBO.SUCURSALES_LAKERS C ON A.COD_CLIENT = C.COD_CLIENT COLLATE Latin1_General_BIN
                 WHERE FECHA_PEDI >= GETDATE()-60 AND A.COD_CLIENT LIKE '[GFM]%' AND A.TALON_PED = '1' AND A.ESTADO = '2'";
@@ -63,8 +63,11 @@ class Pedido
     
     public function insertarHistoricoPedidosDet($idHistorico, $nroPedido, $codCliente, $nroSucurs, $estado){
 
-        $sql = "INSERT INTO FU_REMISION_HISTORICO_DET (ID_TAREA, NRO_PEDIDO, COD_CLIENT, NRO_SUCURS, FINALIZACION) 
-                VALUES ($idHistorico, '$nroPedido', '$codCliente', $nroSucurs, getdate())";
+        $sql = "INSERT INTO FU_REMISION_HISTORICO_DET (ID_TAREA, NRO_PEDIDO, COD_CLIENT, NRO_SUCURS, FINALIZACION, CANTIDAD) 
+        VALUES ($idHistorico, '$nroPedido', '$codCliente', $nroSucurs, GETDATE(), 
+            (SELECT COUNT(GVA03.nro_pedido) AS cantidad 
+            FROM GVA03 
+            WHERE nro_pedido = '$nroPedido'))";
 
         try{
             $stmt = sqlsrv_query( $this->cid_central, $sql );

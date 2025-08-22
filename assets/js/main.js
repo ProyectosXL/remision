@@ -283,6 +283,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Programar handler
     document.getElementById('programarBtn').addEventListener('click', function() {
+        console.log(importedData, 'data');
         if (!importedData.length) {
             alert('No hay datos para programar');
             return;
@@ -457,9 +458,9 @@ function borrarLinea (btn) {
     const numeroPedido = tr.children[1].textContent;
 
     const indexToRemove = importedData.findIndex(row => 
-        row.talonario === talonario || 
-        row.TALON_PED === talonario &&
-        (row.numeroPedido === numeroPedido || row.NRO_PEDIDO === numeroPedido)
+        (row.talonario == talonario || 
+        row.TALON_PED == talonario) &&
+        (row.numeroPedido?.trim() === numeroPedido?.trim() || row.NRO_PEDIDO?.trim() === numeroPedido.trim())
     );
 
     if (indexToRemove > -1) {
@@ -468,7 +469,6 @@ function borrarLinea (btn) {
 
     tr.remove();
 
-    console.log(importedData);  
 };
 
 

@@ -51,6 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             },
             success: function (data) {
+                console.log(data);
                 const response = JSON.parse(data);
                 renderizarTabla(response['body']);
             },
@@ -77,6 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         tareas.forEach(tarea => {
   
+            console.log(tarea);
             const row = document.createElement('tr');
             row.className = 'hover:bg-gray-50';
             
@@ -114,10 +116,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    ${formatFechaHora(tarea.COMIENZO)}
+                    ${formatFechaHora(tarea.COMIENZO, true)}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    ${tarea.FINALIZACION ? formatFechaHora(tarea.FINALIZACION) : '-'}
+                    ${tarea.FINALIZACION ? formatFechaHora(tarea.FINALIZACION, true) : '-'}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">
                     <span class="inline-flex items-center">
@@ -196,19 +198,6 @@ document.addEventListener('DOMContentLoaded', function() {
             alert(`Iniciando impresión de ${cantidadPedidos} remitos...`);
             document.body.removeChild(confirmDialog);
             
-            // En producción, podría hacer una petición al servidor:
-            /*
-            fetch('imprimir_remitos.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    taskId: nroTarea,
-                    remitos: { desde: remitosDesde, hasta: remitosHasta }
-                })
-            });
-            */
         });
         
         confirmDialog.addEventListener('click', function(e) {
@@ -227,34 +216,12 @@ document.addEventListener('DOMContentLoaded', function() {
         return `${dateString} ${time}`;
     }
     
-    function formatFechaHora(fechaString) {
+    function formatFechaHora(fechaString, flag = false) {
         if (!fechaString) return '-';
-        
-        try {
-            const fecha = new Date(fechaString);
-            if (isNaN(fecha.getTime())) {
-                const parts = fechaString.split(/[/ :]/);
-                if (parts.length >= 5) {
-                    const dia = parts[0];
-                    const mes = parts[1];
-                    const anio = parts[2];
-                    const hora = parts[3];
-                    const minutos = parts[4];
-                    return `${dia}/${mes}/${anio} ${hora}:${minutos}`;
-                }
-                return fechaString; 
-            }
-            
-            const dia = String(fecha.getDate()).padStart(2, '0');
-            const mes = String(fecha.getMonth() + 1).padStart(2, '0');
-            const anio = fecha.getFullYear();
-            const hora = String(fecha.getHours()).padStart(2, '0');
-            const minutos = String(fecha.getMinutes()).padStart(2, '0');
-            
-            return `${dia}/${mes}/${anio} ${hora}:${minutos}`;
-        } catch (error) {
-            console.error('Error al formatear fecha:', error, fechaString);
-            return fechaString; 
-        }
+        const [fecha, hora] = fechaString.split('T');
+        const [anio, mes, dia] = fecha.split('-');
+        const [hh, mm] = hora.replace('Z', '').split(':');
+        return `${dia}/${mes}/${anio} ${hh}:${mm}`;
+
     }
 });
